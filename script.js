@@ -33,3 +33,28 @@ const io = new IntersectionObserver(
 revealEls.forEach((el) => {
   io.observe(el);
 });
+
+// ===== Conteo por canal (WhatsApp / Instagram / LinkedIn) =====
+(function trackTrafficSource(){
+  const params = new URLSearchParams(window.location.search);
+  const src = (params.get("utm_source") || "").toLowerCase();
+
+  if (!src) return; // si no hay UTM, no registra canal
+
+  const allowed = new Set(["whatsapp","instagram","linkedin","github","facebook","tiktok"]);
+  const channel = allowed.has(src) ? src : "otro";
+
+  // Espera a que goatcounter cargue y luego registra el evento
+  function send(){
+    if (window.goatcounter && typeof window.goatcounter.count === "function") {
+      window.goatcounter.count({
+        path: `/source/${channel}`,
+        title: `source:${channel}`,
+        event: true
+      });
+    } else {
+      setTimeout(send, 300);
+    }
+  }
+  send();
+})();
